@@ -1,73 +1,143 @@
-# Python MVC Clean Architecture Template
+# Quant Algo Backend Server (Python MVC)
 
-A lightweight, zero-dependency (pure Python) MVC server architecture with automatic route registration and hot-reloading.
-
----
-
-## 🏗️ Architecture Overview
-
-When you want to add a new API endpoint, you only need to touch **3 files**:
-
-```
-Client Request
-      ⬇
-1. Route (api/*_routes.py)       -> Maps URL to a Controller function (Auto-scanned by core/router.py)
-      ⬇
-2. Controller (controllers/*.py) -> Receives payload, validates, calls Service, formats response
-      ⬇
-3. Service (services/*.py)       -> Contains pure business logic (MT5, calculations, database, etc.)
-```
+A lightweight, high-performance MVC backend server built in pure Python (Zero external web framework dependencies).
 
 ---
 
-## 📁 Directory Structure
+## 🔐 Default Superadmin Credentials
+
+Upon first launch, the database (`quant_algo.db`) is automatically initialized and seeded with:
+
+* **Username:** `admin`
+* **Email:** `admin@quantalgo.com`
+* **Password:** `admin123`
+* **Role:** `superadmin`
+
+---
+
+## 📡 API Endpoints
+
+### 1. Authentication Endpoints
+
+#### 🔑 Login
+* **POST `/api/auth/login`**
+* **Request Body:**
+  ```json
+  {
+    "username": "admin",
+    "password": "admin123"
+  }
+  ```
+* **Success Response (200):**
+  ```json
+  {
+    "success": true,
+    "message": "Login successful",
+    "data": {
+      "token": "tok_9b2d35e1f0...",
+      "admin": {
+        "id": 1,
+        "username": "admin",
+        "email": "admin@quantalgo.com",
+        "role": "superadmin",
+        "created_at": "2026-11-21 08:40:00"
+      }
+    }
+  }
+  ```
+
+#### 👤 Current Admin Profile
+* **POST `/api/auth/me`**
+* **Request Body:**
+  ```json
+  {
+    "token": "tok_9b2d35e1f0..."
+  }
+  ```
+
+#### 🚪 Logout
+* **POST `/api/auth/logout`**
+* **Request Body:**
+  ```json
+  {
+    "token": "tok_9b2d35e1f0..."
+  }
+  ```
+
+---
+
+### 2. Admin CRUD Endpoints
+
+#### 📋 List All Admins
+* **GET `/api/admin/list`**
+* Returns array of all admin accounts (passwords excluded).
+
+#### 🔍 Get Single Admin
+* **POST `/api/admin/get`**
+* **Request Body:**
+  ```json
+  {
+    "id": 1
+  }
+  ```
+
+#### ➕ Create New Admin
+* **POST `/api/admin/create`**
+* **Request Body:**
+  ```json
+  {
+    "username": "trader_john",
+    "email": "john@quantalgo.com",
+    "password": "SecurePassword123!",
+    "role": "admin"
+  }
+  ```
+
+#### ✏️ Update Admin
+* **POST `/api/admin/update`**
+* **Request Body:**
+  ```json
+  {
+    "id": 2,
+    "email": "john.updated@quantalgo.com",
+    "role": "manager",
+    "password": "NewPassword456!"
+  }
+  ```
+
+#### ❌ Delete Admin
+* **POST `/api/admin/delete`**
+* **Request Body:**
+  ```json
+  {
+    "id": 2
+  }
+  ```
+*(Protection: You cannot delete the only remaining superadmin)*.
+
+---
+
+## 🏗️ Architecture Pattern (3-File Rule)
 
 ```text
-Quant_Algo_Backend/
-├── api/
-│   ├── __init__.py
-│   └── demo_routes.py         <-- 1. Route definitions (mapped to controllers)
-├── controllers/
-│   ├── __init__.py
-│   └── demo_controller.py     <-- 2. Request/Response controller
-├── services/
-│   ├── __init__.py
-│   └── demo_service.py        <-- 3. Business logic / algorithms
-├── core/
-│   ├── __init__.py
-│   └── router.py              <-- Auto route discovery mechanism
-├── app.py                     <-- HTTP Server & routing engine (Pure Python)
-├── watcher.py                 <-- Auto-reloader for development
-├── requirements.txt           <-- (Optional) watchdog for auto-reload
-└── README.md
+Request ➔ api/*_routes.py ➔ controllers/*_controller.py ➔ services/*_service.py ➔ core/database.py
 ```
+
+* **`core/router.py`**: Auto-scans all `api/*_routes.py` files on startup.
+* **`core/database.py`**: SQLite connection & schema manager.
+* **`services/`**: Business logic & DB queries.
+* **`controllers/`**: Request validation, status codes, and JSON response formatting.
+* **`api/`**: Route definition mapping URLs to controllers.
 
 ---
 
-## 🚀 How to Run
+## 🚀 Running the Server
 
-### Standard Mode:
 ```bash
+# Direct run:
 python app.py
-```
 
-### Development Mode (Auto-reload on file change):
-```bash
+# With auto-reload on file change:
 pip install -r requirements.txt
 python watcher.py
 ```
-
----
-
-## 🧪 Demo Endpoints
-
-* **GET `http://127.0.0.1:5000/`** -> Server status & available route list
-* **GET `http://127.0.0.1:5000/api/demo`** -> Demo GET endpoint
-* **POST `http://127.0.0.1:5000/api/demo/order`** -> Demo POST endpoint
-  ```json
-  {
-    "symbol": "EURUSD",
-    "action": "BUY",
-    "volume": 0.05
-  }
-  ```

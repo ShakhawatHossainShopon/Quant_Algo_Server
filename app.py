@@ -4,6 +4,7 @@ import traceback
 import inspect
 
 from core.router import register_all_routes
+from core.database import init_db
 
 HOST = "127.0.0.1"
 PORT = 5000
@@ -123,6 +124,7 @@ class APIHandler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    init_db()
     server = HTTPServer((HOST, PORT), APIHandler)
 
     print("=" * 45)
