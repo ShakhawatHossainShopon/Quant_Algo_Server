@@ -2,8 +2,28 @@ from services.mt5_service import (
     get_account_details,
     get_open_positions,
     create_position,
-    close_position_by_ticket
+    close_position_by_ticket,
+    get_available_symbols
 )
+
+
+def get_symbols_controller():
+    """
+    GET /api/mt5/symbols
+    Returns list of tradeable assets/symbols.
+    """
+    try:
+        symbols = get_available_symbols()
+        return {
+            "success": True,
+            "count": len(symbols),
+            "data": symbols
+        }, 200
+    except Exception as e:
+        return {
+            "success": False,
+            "message": str(e)
+        }, 500
 
 
 def get_account_controller():

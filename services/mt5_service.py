@@ -20,6 +20,53 @@ def _ensure_mt5_connected():
         )
 
 
+def get_available_symbols():
+    """
+    Fetches list of available symbols from MetaTrader 5 terminal.
+    Falls back to a curated list of standard assets if terminal is offline.
+    """
+    default_symbols = [
+        {"symbol": "EURUSD", "category": "Forex Majors", "description": "Euro vs US Dollar"},
+        {"symbol": "GBPUSD", "category": "Forex Majors", "description": "British Pound vs US Dollar"},
+        {"symbol": "USDJPY", "category": "Forex Majors", "description": "US Dollar vs Japanese Yen"},
+        {"symbol": "USDCHF", "category": "Forex Majors", "description": "US Dollar vs Swiss Franc"},
+        {"symbol": "AUDUSD", "category": "Forex Majors", "description": "Australian Dollar vs US Dollar"},
+        {"symbol": "USDCAD", "category": "Forex Majors", "description": "US Dollar vs Canadian Dollar"},
+        {"symbol": "NZDUSD", "category": "Forex Majors", "description": "NZ Dollar vs US Dollar"},
+        {"symbol": "EURJPY", "category": "Forex Crosses", "description": "Euro vs Japanese Yen"},
+        {"symbol": "GBPJPY", "category": "Forex Crosses", "description": "British Pound vs Japanese Yen"},
+        {"symbol": "EURGBP", "category": "Forex Crosses", "description": "Euro vs British Pound"},
+        {"symbol": "AUDJPY", "category": "Forex Crosses", "description": "Australian Dollar vs Japanese Yen"},
+        {"symbol": "XAUUSD", "category": "Metals & Energy", "description": "Gold vs US Dollar"},
+        {"symbol": "XAGUSD", "category": "Metals & Energy", "description": "Silver vs US Dollar"},
+        {"symbol": "USOIL", "category": "Metals & Energy", "description": "Crude Oil WTI"},
+        {"symbol": "BTCUSD", "category": "Crypto", "description": "Bitcoin vs US Dollar"},
+        {"symbol": "ETHUSD", "category": "Crypto", "description": "Ethereum vs US Dollar"},
+        {"symbol": "US500", "category": "Indices", "description": "S&P 500 Index"},
+        {"symbol": "US30", "category": "Indices", "description": "Dow Jones 30 Index"},
+        {"symbol": "USTEC", "category": "Indices", "description": "Nasdaq 100 Index"},
+    ]
+
+    try:
+        _ensure_mt5_connected()
+        symbols = mt5.symbols_get()
+        if symbols:
+            res = []
+            for s in symbols:
+                if s.visible or len(res) < 100:
+                    res.append({
+                        "symbol": s.name,
+                        "category": "Broker Symbol",
+                        "description": s.description or s.name
+                    })
+            if res:
+                return res
+    except Exception:
+        pass
+
+    return default_symbols
+
+
 def get_account_details():
     """
     Fetches real-time account summary (balance, equity, margin, leverage, etc.)
